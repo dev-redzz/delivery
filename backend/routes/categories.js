@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
+
 const { readDB, writeDB } = require('../database/db');
 const { authMiddleware } = require('./auth');
 
@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
 router.post('/', authMiddleware, (req, res) => {
   const db = readDB();
   const { name, icon } = req.body;
-  const cat = { id: uuidv4(), name, icon: icon || '🍽️', order: db.categories.length + 1 };
+  const cat = { id: crypto.randomUUID(), name, icon: icon || '🍽️', order: db.categories.length + 1 };
   db.categories.push(cat);
   writeDB(db);
   res.status(201).json(cat);

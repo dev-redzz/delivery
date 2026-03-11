@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+
 const { readDB, writeDB } = require('../database/db');
 const { authMiddleware } = require('./auth');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../uploads')),
-  filename: (req, file, cb) => cb(null, 'logo-' + uuidv4() + path.extname(file.originalname))
+  filename: (req, file, cb) => cb(null, 'logo-' + crypto.randomUUID() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
 
