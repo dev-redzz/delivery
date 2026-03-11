@@ -1,39 +1,45 @@
 const express = require('express');
 const router = express.Router();
-
-const { readDB, writeDB } = require('../database/db');
+const { pool } = require('../database/db');
 const { authMiddleware } = require('./auth');
 
-router.get('/', (req, res) => {
-  const db = readDB();
-  res.json(db.categories.sort((a, b) => a.order - b.order));
+router.get('/', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM categories ORDER BY "order"');
+    res.json(result.rows);
+  } catch (e) { res.status(500).json({ error: 'Erro interno' }); }
 });
 
-router.post('/', authMiddleware, (req, res) => {
-  const db = readDB();
+router.post('/', authMiddleware, async (req, res) => {
   const { name, icon } = req.body;
-  const cat = { id: crypto.randomUUID(), name, icon: icon || '🍽️', order: db.categories.length + 1 };
-  db.categories.push(cat);
-  writeDB(db);
-  res.status(201).json(cat);
+  try {
+    const count = await pool.query('SELECT COUNT(*) FROM categories');
+    const result = await pool.query(
+      'INSERT INTO categories (name, icon, "order") VALUES ($1, $2, $3) RETURNING *',
+      [name, icon || '🍽️', parseInt(count.rows[0].count) + 1]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Erro interno' }); }
 });
 
-router.put('/:id', authMiddleware, (req, res) => {
-  const db = readDB();
-  const idx = db.categories.findIndex(c => c.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Categoria não encontrada' });
-  db.categories[idx] = { ...db.categories[idx], ...req.body };
-  writeDB(db);
-  res.json(db.categories[idx]);
+router.put('/:id', authMiddleware, async (req, res) => {
+  const { name, icon } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE categories SET name = COALESCE($1, name), icon = COALESCE($2, icon) WHERE id = $3 RETURNING *',
+      [name, icon, req.params.id]
+    );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Categoria não encontrada' });
+    res.json(result.rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Erro interno' }); }
 });
 
-router.delete('/:id', authMiddleware, (req, res) => {
-  const db = readDB();
-  const idx = db.categories.findIndex(c => c.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Categoria não encontrada' });
-  db.categories.splice(idx, 1);
-  writeDB(db);
-  res.json({ message: 'Categoria removida' });
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM categories WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows[0]) return res.status(404).json({ error: 'Categoria não encontrada' });
+    res.json({ message: 'Categoria removida' });
+  } catch (e) { res.status(500).json({ error: 'Erro interno' }); }
 });
 
 module.exports = router;
