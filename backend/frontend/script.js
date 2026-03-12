@@ -179,9 +179,9 @@ function openProductModal(productId) {
               <div class="option-choice ${i === 0 && opt.required ? 'selected' : ''}" onclick="selectOption(this, '${opt.id}', '${c.id}')">
                 <label>
                   <input type="radio" name="opt_${opt.id}" value="${c.id}" ${i === 0 && opt.required ? 'checked' : ''} style="display:none">
-                  ${c.label}
+                  <span>${c.label}</span>
+                  <span class="option-price ${c.price === 0 ? 'free' : ''}">${c.price > 0 ? '+R$ ' + c.price.toFixed(2).replace('.', ',') : 'Incluso'}</span>
                 </label>
-                <span class="option-price ${c.price === 0 ? 'free' : ''}">${c.price > 0 ? '+R$ ' + c.price.toFixed(2).replace('.', ',') : 'Incluso'}</span>
               </div>
             `).join('')}
           </div>
@@ -199,9 +199,9 @@ function openProductModal(productId) {
             <div class="extra-item" onclick="toggleExtra(this, '${e.id}', ${e.price})">
               <label>
                 <input type="checkbox" value="${e.id}" style="display:none">
-                ${e.label}
+                <span>${e.label}</span>
+                <span class="extra-price">+R$ ${e.price.toFixed(2).replace('.', ',')}</span>
               </label>
-              <span class="extra-price">+R$ ${e.price.toFixed(2).replace('.', ',')}</span>
             </div>
           `).join('')}
         </div>
