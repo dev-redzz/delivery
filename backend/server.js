@@ -10,9 +10,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static files — tudo dentro de /backend agora
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, '../frontend')));
-app.use('/admin', express.static(path.join(__dirname, '../admin')));
+app.use(express.static(path.join(__dirname, 'frontend')));
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
   fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
@@ -28,9 +30,9 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/settings', settingsRoutes);
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../frontend/index.html')));
-app.get('/admin/:page', (req, res) => res.sendFile(path.join(__dirname, '../admin', req.params.page)));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../admin/login.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend/index.html')));
+app.get('/admin/:page', (req, res) => res.sendFile(path.join(__dirname, 'admin', req.params.page)));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin/login.html')));
 
 initDB()
   .then(() => {

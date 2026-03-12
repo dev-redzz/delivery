@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --red: #EA1D2C; --black: #1a1a1a; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--black);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background-image: radial-gradient(circle at 20% 50%, rgba(234,29,44,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255,107,0,0.1) 0%, transparent 50%);
+}
+.login-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%; max-width: 420px;
+  margin: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.login-header { text-align: center; margin-bottom: 32px; }
+.login-logo { font-size: 3rem; margin-bottom: 8px; }
+.login-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--black); }
+.login-sub { color: #888; font-size: 0.9rem; margin-top: 4px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 800; margin-bottom: 6px; font-size: 0.85rem; }
+.form-group input {
+  width: 100%; border: 2px solid #e0e0e0; border-radius: 10px;
+  padding: 12px 16px; font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem; transition: 0.2s;
+}
+.form-group input:focus { outline: none; border-color: var(--red); }
+.btn-login {
+  width: 100%; padding: 14px;
+  background: var(--red); color: white;
+  border: none; border-radius: 50px;
+  font-weight: 900; font-size: 1rem; cursor: pointer;
+  font-family: 'Nunito', sans-serif; margin-top: 8px;
+  transition: 0.2s;
+}
+.btn-login:hover { background: #C41A27; }
+.error-msg {
+  background: #fff0f0; color: var(--red); border: 1px solid #fdd;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.85rem;
+  font-weight: 700; margin-bottom: 16px; display: none;
+}
+.back-link { text-align: center; margin-top: 20px; }
+.back-link a { color: #888; font-size: 0.85rem; text-decoration: none; }
+.back-link a:hover { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="login-header">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">Painel Admin</div>
+    <div class="login-sub">Acesso restrito à equipe</div>
+  </div>
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="admin@lanchonete.com" value="admin@lanchonete.com">
+  </div>
+  <div class="form-group">
+    <label>Senha</label>
+    <input type="password" id="password" placeholder="••••••••" value="admin123">
+  </div>
+  <button class="btn-login" onclick="login()">Entrar</button>
+  <div class="back-link"><a href="/">← Voltar para o site</a></div>
+</div>
+<script>
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('errorMsg');
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
+    localStorage.setItem('adminToken', data.token);
+    window.location.href = '/admin/dashboard.html';
+  } catch (e) {
+    err.textContent = 'Erro ao conectar ao servidor';
+    err.style.display = 'block';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+// Check if already logged in
+const token = localStorage.getItem('adminToken');
+if (token) {
+  fetch('/api/auth/verify', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => { if (r.ok) window.location.href = '/admin/dashboard.html'; });
+}
+</script>
+</body>
+</html>

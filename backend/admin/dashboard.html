@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="toast-admin"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="brand-icon">🍔</span>
+    <div>
+      <div class="brand-name">BurgerHouse</div>
+      <div class="brand-sub">Painel Admin</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-tab="products" onclick="showTab('products', this)">📦 Produtos</a>
+    <a href="#" class="nav-item" data-tab="categories" onclick="showTab('categories', this)">🏷️ Categorias</a>
+    <a href="#" class="nav-item" data-tab="settings" onclick="showTab('settings', this)">⚙️ Configurações</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/" target="_blank" class="nav-item">🌐 Ver Site</a>
+    <a href="#" class="nav-item logout" onclick="logout()">🚪 Sair</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- PRODUCTS TAB -->
+  <div class="tab-panel active" id="tab-products">
+    <div class="panel-header">
+      <h1>📦 Produtos</h1>
+      <button class="btn-primary" onclick="openProductForm()">+ Novo Produto</button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="productSearch" placeholder="🔍 Buscar produto..." oninput="filterProducts()">
+    </div>
+
+    <div id="productsTable">
+      <div class="loading-state">Carregando produtos...</div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES TAB -->
+  <div class="tab-panel" id="tab-categories">
+    <div class="panel-header">
+      <h1>🏷️ Categorias</h1>
+      <button class="btn-primary" onclick="openCategoryForm()">+ Nova Categoria</button>
+    </div>
+    <div id="categoriesList">
+      <div class="loading-state">Carregando categorias...</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="panel-header">
+      <h1>⚙️ Configurações</h1>
+    </div>
+    <div class="settings-card">
+      <h3>Informações da Lanchonete</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome do estabelecimento</label>
+          <input type="text" id="set-name" placeholder="Ex: Burguer House">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp (com DDI, sem +)</label>
+          <input type="text" id="set-phone" placeholder="5511999999999">
+        </div>
+        <div class="form-group">
+          <label>Endereço</label>
+          <input type="text" id="set-address" placeholder="Rua das Delícias, 123">
+        </div>
+        <div class="form-group">
+          <label>Horário de funcionamento</label>
+          <input type="text" id="set-hours" placeholder="18:00 - 23:00">
+        </div>
+        <div class="form-group">
+          <label>Taxa de entrega (R$)</label>
+          <input type="number" id="set-delivery" placeholder="5.00" step="0.50">
+        </div>
+        <div class="form-group">
+          <label>Pedido mínimo (R$)</label>
+          <input type="number" id="set-minorder" placeholder="20.00" step="0.50">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Link da logo (URL ou deixe em branco)</label>
+        <input type="text" id="set-logolink" placeholder="https://seusite.com">
+      </div>
+
+      <div class="form-group">
+        <label>Logo da lanchonete</label>
+        <div class="logo-preview-wrap">
+          <img id="currentLogo" src="" alt="Logo" style="display:none; width:80px; height:80px; border-radius:50%; object-fit:cover;">
+          <span id="noLogoText" style="color:#888;font-size:0.9rem;">Nenhuma logo cadastrada</span>
+        </div>
+        <input type="file" id="set-logo" accept="image/*" style="margin-top:8px;">
+      </div>
+
+      <button class="btn-primary" onclick="saveSettings()">💾 Salvar Configurações</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- PRODUCT FORM MODAL -->
+<div class="modal-overlay" id="productFormModal">
+  <div class="modal-card" style="max-width:700px">
+    <div class="modal-header">
+      <h2 id="productFormTitle">Novo Produto</h2>
+      <button class="btn-close" onclick="closeProductForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pf-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome *</label>
+          <input type="text" id="pf-name" placeholder="Ex: X-Burguer">
+        </div>
+        <div class="form-group">
+          <label>Categoria *</label>
+          <select id="pf-category"></select>
+        </div>
+        <div class="form-group">
+          <label>Preço (R$) *</label>
+          <input type="number" id="pf-price" placeholder="0.00" step="0.50">
+        </div>
+        <div class="form-group">
+          <label>Disponível</label>
+          <select id="pf-available">
+            <option value="true">✅ Sim</option>
+            <option value="false">❌ Não</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea id="pf-desc" rows="2" placeholder="Descreva o produto..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Imagem do produto</label>
+        <div id="imgPreviewWrap" style="margin-bottom:8px; display:none">
+          <img id="imgPreview" src="" style="width:100px;height:100px;object-fit:cover;border-radius:10px;border:2px solid #eee;">
+        </div>
+        <input type="file" id="pf-image" accept="image/*" onchange="previewImage(this)">
+      </div>
+
+      <!-- OPTIONS -->
+      <div class="section-divider">
+        <span>Opções do produto</span>
+        <button class="btn-sm" onclick="addOptionGroup()">+ Adicionar opção</button>
+      </div>
+      <div id="optionsContainer"></div>
+
+      <!-- EXTRAS -->
+      <div class="section-divider">
+        <span>Extras</span>
+        <button class="btn-sm" onclick="addExtra()">+ Adicionar extra</button>
+      </div>
+      <div id="extrasContainer"></div>
+    </div>
+    <div class="modal-footer-btns">
+      <button class="btn-secondary" onclick="closeProductForm()">Cancelar</button>
+      <button class="btn-primary" onclick="saveProduct()">💾 Salvar Produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY FORM MODAL -->
+<div class="modal-overlay" id="categoryFormModal">
+  <div class="modal-card" style="max-width:400px">
+    <div class="modal-header">
+      <h2 id="catFormTitle">Nova Categoria</h2>
+      <button class="btn-close" onclick="closeCategoryForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cf-id">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" id="cf-name" placeholder="Ex: Hambúrguer">
+      </div>
+      <div class="form-group">
+        <label>Ícone (emoji)</label>
+        <input type="text" id="cf-icon" placeholder="🍔" maxlength="4">
+      </div>
+    </div>
+    <div class="modal-footer-btns">
+      <button class="btn-secondary" onclick="closeCategoryForm()">Cancelar</button>
+      <button class="btn-primary" onclick="saveCategory()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
