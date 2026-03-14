@@ -58,6 +58,22 @@ function applySettings() {
     `🚀 Taxa: R$ ${(settings.deliveryFee || 0).toFixed(2).replace('.', ',')}`;
   document.getElementById('cartDelivery').textContent =
     `R$ ${(settings.deliveryFee || 0).toFixed(2).replace('.', ',')}`;
+
+  // Status aberto/fechado automático por horário
+  const now = new Date();
+  const hour = now.getHours() * 100 + now.getMinutes();
+  const hours = settings.openHours || '';
+  const match = hours.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+  const statusEl = document.getElementById('storeStatus');
+  if (match) {
+    const open  = parseInt(match[1]) * 100 + parseInt(match[2]);
+    const close = parseInt(match[3]) * 100 + parseInt(match[4]);
+    const isOpen = hour >= open && hour < close;
+    statusEl.textContent = isOpen ? '● Aberto agora' : '● Fechado agora';
+    statusEl.className = 'status-badge ' + (isOpen ? 'open' : 'closed');
+  } else {
+    statusEl.style.display = 'none';
+  }
 }
 
 // ===== CATEGORIES =====
